@@ -8,4 +8,6 @@ Only once you get to the target are you able to download your words, with a titl
 
 We also added some styles option, a typewriter scroll effect and a spellchacker disable button (those little red lines are sooo anoying)
 
+Great for speed writing, journaling, draft or just to type away.
+
 Small project, only one app file, no router. Powered by react, bundled with Webpack.
