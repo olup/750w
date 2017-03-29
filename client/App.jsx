@@ -25,7 +25,7 @@ export default class App extends Component {
 
     componentDidMount(){
         var _this = this
-        document.querySelector('textarea').addEventListener('input', function () {
+        document.querySelector('textarea').addEventListener('keyup', function () {
             var coordinates = getCaretCoordinates(this, this.selectionEnd);
             var bodyRect = document.body.getBoundingClientRect()
             var rect = this.getBoundingClientRect();
@@ -34,7 +34,7 @@ export default class App extends Component {
             var minHeight = 200;
             var pos = coordinates.top + rect.top;
             var scroll = _this.state.options.scroll
-            if (scroll && pos > maxHeight) window.scroll(0, offset + coordinates.top - maxHeight )
+            if (scroll && pos > maxHeight) window.scroll(0, offset + 100 + coordinates.top - maxHeight )
             if (scroll && pos<minHeight) window.scroll(0, offset + coordinates.top - minHeight )
             
         })
