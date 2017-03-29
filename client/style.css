@@ -6,7 +6,8 @@ body, html {
 .wrapper{
 
         font-family: 'Inconsolata', monospace;
-        padding : 60px 0;
+        padding : 0;
+        padding-top : 100px;
         padding-bottom : 100px;
         min-height : 100vh;
         box-sizing: border-box;
@@ -21,10 +22,11 @@ input, textarea{
 }
 
 .load-bar-container{
-    width : 100%;
+    /*width : 100%;
     top:0;
     left : 0;
-    position : fixed;
+    position : fixed;*/
+    /*margin-bottom : -5px;*/
 }
 
 .load-bar {
@@ -45,7 +47,7 @@ input, textarea{
     background-color: white;
     /* margin: 100px; */
     min-height : 300px;
-    margin: 10px auto;
+    margin: 0px auto;
    
 }
 
@@ -140,6 +142,8 @@ input, textarea{
 
 .options-container {
     text-align : right;
+    margin-top : 10px;
+    
 }
 
 .options-item{

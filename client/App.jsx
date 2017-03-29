@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Textarea from 'react-textarea-autosize';
 import moment from 'moment'
+import { StickyContainer, Sticky } from 'react-sticky';
 
 var getCaretCoordinates = require('caretPos');
 
@@ -71,11 +72,15 @@ ${text}`
     render(){
         var wordCount = countWords(this.state.text)
         return <div className={this.state.options.color ? "wrapper color" : "wrapper"}>
-                <LoadBar words={wordCount}/>
-                {this.state.modal && <Modal  offDisplay={()=>this.setState({modal : false})}  onSave={this.Save.bind(this)} onChange={(title="",tags="")=>this.setState({title,tags})}/>}
-                {wordCount > 750 && <SaveButton text={this.state.text} onClick={()=>this.setState({modal : true})}/>}
-                <Editor onChange={text=> this.setState({text})} options={this.state.options} blurry={this.state.modal}/>
-                <Options onChange={options=>this.setState({options})} />
+                    <StickyContainer>
+                        <Sticky>
+                            <LoadBar words={wordCount}/>
+                        </Sticky>
+                        {this.state.modal && <Modal  offDisplay={()=>this.setState({modal : false})}  onSave={this.Save.bind(this)} onChange={(title="",tags="")=>this.setState({title,tags})}/>}
+                        {wordCount > 750 && <SaveButton text={this.state.text} onClick={()=>this.setState({modal : true})}/>}
+                        <Editor onChange={text=> this.setState({text})} options={this.state.options} blurry={this.state.modal}/>
+                        <Options onChange={options=>this.setState({options})} />
+                    </StickyContainer>
             </div>
     }
 }
@@ -92,7 +97,8 @@ class Editor extends Component {
     }
     handleKeyPress (event){
         if(this.props.options.nedit){
-            if(event.key == 'Backspace'){
+            console.log(event.key)
+            if(event.key == 'Backspace' || event.key.indexOf("Arrow")!=-1){
                 event.preventDefault()
             }
         }
