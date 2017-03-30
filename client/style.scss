@@ -27,7 +27,6 @@ input, textarea{
 
 .load-bar {
     height: 5px;
-    background-color: #347737;
     /* opacity: .5; */
     max-width: 100%;
 }
@@ -59,6 +58,7 @@ input, textarea{
     resize:none;
     outline : none;
     border : 1px solid transparent;
+    overflow: hidden;
 
 }
 
@@ -164,12 +164,21 @@ input, textarea{
 
 .wrapper.minimal{
  background-color : #eee;
+     .load-bar {
+        background-color: #aaa;
+    }
 }
 
 .wrapper.green{
  background-color : #4caf50;
+    .load-bar {
+        background-color: #347737;
+    }
 }
 
 .wrapper.paper{
     background: url("https://www.toptal.com/designers/subtlepatterns/patterns/ep_naturalwhite.png");
+    .load-bar {
+        background-color: #aaa;
+    }
 }
