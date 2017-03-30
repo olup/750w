@@ -141,20 +141,27 @@ input, textarea{
     
 }
 
-.options-item, .select-title{
+.options-item, .select-title, .option-link{
     opacity : .5;
     display : inline-block;
     cursor : pointer;
     margin-left : 10px;
+    text-decoration : none;
+    color : black;
 }
 
-.select-item{
+.select-item {
     opacity : .5;
     cursor : pointer;
-    margin-left : 10px;
+    margin-left : 20px;
+    display : block;
+    white-space: nowrap;
+}
+.select-item:before {
+    content : " "
 }
 
-.options-item.on, .select-item.selected, .select-item:hover, .select-title , .select-title:hover{
+.options-item.on, .option-link:hover, .select-item.selected, .select-item:hover, .select-title , .select-title:hover{
     opacity : 1;
 }
 
@@ -186,5 +193,13 @@ input, textarea{
     background: url("/assets/img/flowers.jpg");
     .load-bar {
         background-color: #cde8e4;
+    }
+}
+
+.wrapper.picnick{
+    background: url("/assets/img/picnick.jpg");
+    background-size: 50%;
+    .load-bar {
+        background-color: #7b592a;
     }
 }

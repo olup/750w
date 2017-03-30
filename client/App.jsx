@@ -168,7 +168,7 @@ class Modal extends Component {
                     <div className="body">
                         <div>Choose a title (optional)</div>
                         <input type="text" onChange={e=>this.setState({title : e.target.value})}/>
-                        <div>Add some tags (coma separated - optional)</div>
+                        <div>Add some tags (comma separated - optional)</div>
                         <input type="text" onChange={e=>this.setState({tags : e.target.value})}/>
                     </div>
                     <div className="foot" onClick={this.props.onSave.bind(this)}>Save</div>
@@ -209,10 +209,14 @@ class Options extends Component {
     render(){
         return <div className="options-container">
                 <div className="container">
-                    <div className={!this.state.nedit ? "options-item on" : "options-item"} onClick={()=>this.setState({nedit : !this.state.nedit})}>Edit</div>
-                    <div className={this.state.scroll ? "options-item on" : "options-item"} onClick={()=>this.setState({scroll : !this.state.scroll})}>Scroll</div>
-                    <div className={this.state.spellCheck ? "options-item on" : "options-item"} onClick={()=>this.setState({spellCheck : !this.state.spellCheck})}>Spellcheck</div>
-                    <Select className={"select-title"} title={"Theme"} choices={["Minimal","Green","Paper","Flowers"]} onSelect={ (style) => this.setState({style}) } selected = {this.state.style || "Green"} />
+                    <div className={this.state.options ? "options-item on" : "options-item"} onClick={()=>this.setState({options : !this.state.options})}>Options</div>
+                    { this.state.options && <span>
+                       <div className={!this.state.nedit ? "options-item on" : "options-item"} onClick={()=>this.setState({nedit : !this.state.nedit})}>Edit</div>
+                        <div className={this.state.scroll ? "options-item on" : "options-item"} onClick={()=>this.setState({scroll : !this.state.scroll})}>Scroll</div>
+                        <div className={this.state.spellCheck ? "options-item on" : "options-item"} onClick={()=>this.setState({spellCheck : !this.state.spellCheck})}>Spellcheck</div>
+                        <Select className={"select-title"} title={"Theme"} choices={["Minimal","Paper","Flowers","Picnick"]} onSelect={ (style) => this.setState({style}) } selected = {this.state.style || "Green"} />
+                        <a className="option-link" href="https://github.com/olup/750w" target="blank">About</a> 
+                    </span>}
                 </div>
             </div>
     }
@@ -235,7 +239,7 @@ class Select extends Component {
     render(){
         return <span style={{position:"relative", textAlign : "left"}}>
             <span onClick={this.toogleSelect.bind(this)} className={this.state.open ? this.props.className+" open" : this.props.className}>{this.props.title}</span>
-            { this.state.open && <ClickOutside onClickOutside={this.toogleSelect.bind(this)} style={{position : "absolute", top : "100%", left : 0 }}>
+            { this.state.open && <ClickOutside onClickOutside={this.toogleSelect.bind(this)} style={{position : "absolute", top : "100%", left : 0, display : "inline-block" }}>
                 { this.props.choices.map( it => {
                     var classn = "select-item"
                     if( this.props.selected == it ) classn = "select-item selected"
