@@ -73,16 +73,18 @@ ${text}`
     render(){
         var wordCount = countWords(this.state.text)
         var style = this.state.options.style || "Green"
-        return <div className={"wrapper "+ style.toLowerCase()}>
+        return <div> 
+            {this.state.modal && <Modal  offDisplay={()=>this.setState({modal : false})}  onSave={this.Save.bind(this)} onChange={(title="",tags="")=>this.setState({title,tags})}/>}
+            <div className={this.state.modal ? "wrapper blurry "+ style.toLowerCase() : "wrapper "+ style.toLowerCase()}>
                     <StickyContainer>
                         <Sticky>
                             <LoadBar words={wordCount}/>
                         </Sticky>
-                        {this.state.modal && <Modal  offDisplay={()=>this.setState({modal : false})}  onSave={this.Save.bind(this)} onChange={(title="",tags="")=>this.setState({title,tags})}/>}
                         {wordCount > 750 && <SaveButton text={this.state.text} onClick={()=>this.setState({modal : true})}/>}
-                        <Editor onChange={text=> this.setState({text})} options={this.state.options} blurry={this.state.modal}/>
+                        <Editor onChange={text=> this.setState({text})} options={this.state.options}/>
                         <Options onChange={options=>this.setState({options})} />
                     </StickyContainer>
+            </div>
             </div>
     }
 }
@@ -210,7 +212,7 @@ class Options extends Component {
                     <div className={!this.state.nedit ? "options-item on" : "options-item"} onClick={()=>this.setState({nedit : !this.state.nedit})}>Edit</div>
                     <div className={this.state.scroll ? "options-item on" : "options-item"} onClick={()=>this.setState({scroll : !this.state.scroll})}>Scroll</div>
                     <div className={this.state.spellCheck ? "options-item on" : "options-item"} onClick={()=>this.setState({spellCheck : !this.state.spellCheck})}>Spellcheck</div>
-                    <Select className={"select-title"} title={"Theme"} choices={["Minimal","Green","Paper"]} onSelect={ (style) => this.setState({style}) } selected = {this.state.style || "Green"} />
+                    <Select className={"select-title"} title={"Theme"} choices={["Minimal","Green","Paper","Flowers"]} onSelect={ (style) => this.setState({style}) } selected = {this.state.style || "Green"} />
                 </div>
             </div>
     }

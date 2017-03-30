@@ -1,5 +1,6 @@
 const webpack = require('webpack');
 const path = require('path');
+const copyWebpackPlugin = require('copy-webpack-plugin');
 
 const sourcePath = path.join(__dirname, './client');
 const staticsPath = path.join(__dirname, './static');
@@ -18,6 +19,9 @@ module.exports = function (env) {
       NODE_ENV: nodeEnv,
     }),
     new webpack.NamedModulesPlugin(),
+    new copyWebpackPlugin([
+      {from : sourcePath + "/assets", to: staticsPath + '/assets'},
+    ])
   ];
 
   if (isProd) {
