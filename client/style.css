@@ -13,8 +13,16 @@ body, html {
         box-sizing: border-box;
 }
 
-.wrapper.color{
+.wrapper.minimal{
+ background-color : #eee;
+}
+
+.wrapper.green{
  background-color : #4caf50;
+}
+
+.wrapper.paper{
+    background: url("https://www.toptal.com/designers/subtlepatterns/patterns/ep_naturalwhite.png");
 }
 
 input, textarea{
@@ -146,13 +154,20 @@ input, textarea{
     
 }
 
-.options-item{
+.options-item, .select-title{
     opacity : .5;
     display : inline-block;
     cursor : pointer;
     margin-left : 10px;
 }
 
-.options-item.on{
+.select-item{
+    opacity : .5;
+    cursor : pointer;
+    margin-left : 10px;
+}
+
+.options-item.on, .select-item.selected, .select-item:hover, .select-title , .select-title:hover{
     opacity : 1;
 }
+

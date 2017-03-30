@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import Textarea from 'react-textarea-autosize';
 import moment from 'moment'
 import { StickyContainer, Sticky } from 'react-sticky';
+import ClickOutside from "react-click-outside"
 
 var getCaretCoordinates = require('caretPos');
 
@@ -71,7 +72,7 @@ ${text}`
 
     render(){
         var wordCount = countWords(this.state.text)
-        return <div className={this.state.options.color ? "wrapper color" : "wrapper"}>
+        return <div className={"wrapper "+this.state.options.style.toLowerCase()}>
                     <StickyContainer>
                         <Sticky>
                             <LoadBar words={wordCount}/>
@@ -188,7 +189,8 @@ class Options extends Component {
             spellCheck: false,
             color: true,
             scroll : true,
-            nedit : false
+            nedit : false,
+            style : ""
         }
     }
     componentDidMount(){
@@ -206,10 +208,38 @@ class Options extends Component {
                 <div className="container">
                     <div className={!this.state.nedit ? "options-item on" : "options-item"} onClick={()=>this.setState({nedit : !this.state.nedit})}>Edit</div>
                     <div className={this.state.scroll ? "options-item on" : "options-item"} onClick={()=>this.setState({scroll : !this.state.scroll})}>Scroll</div>
-                    <div className={this.state.color ? "options-item on" : "options-item"} onClick={()=>this.setState({color : !this.state.color})}>Color</div>
                     <div className={this.state.spellCheck ? "options-item on" : "options-item"} onClick={()=>this.setState({spellCheck : !this.state.spellCheck})}>Spellcheck</div>
+                    <Select className={"select-title"} title={"Theme"} choices={["Minimal","Green","Paper"]} onSelect={ (style) => this.setState({style}) } selected = {this.state.style} />
                 </div>
             </div>
+    }
+}
+
+class Select extends Component {
+    constructor(props){
+        super(props)
+        this.state = {
+            open : false
+        }
+    }
+    toogleSelect(){
+        this.setState({open : !this.state.open})
+    }
+    select(select){
+        this.props.onSelect(select)
+        this.setState({ open : false})
+    }
+    render(){
+        return <span style={{position:"relative", textAlign : "left"}}>
+            <span onClick={this.toogleSelect.bind(this)} className={this.state.open ? this.props.className+" open" : this.props.className}>{this.props.title}</span>
+            { this.state.open && <ClickOutside onClickOutside={this.toogleSelect.bind(this)} style={{position : "absolute", top : "100%", left : 0 }}>
+                { this.props.choices.map( it => {
+                    var classn = "select-item"
+                    if( this.props.selected == it ) classn = "select-item selected"
+                    return <div key={it} onClick={this.select.bind(this, it)} className={classn}>{it}</div>
+                }) }
+            </ClickOutside> }
+        </span>
     }
 }
 
