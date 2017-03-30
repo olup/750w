@@ -4,6 +4,6 @@ import React from 'react';
 import App from 'App';
 
 import 'index.html';
-import 'style.css';
+import 'style.scss';
 
 ReactDOM.render( <App/> , document.getElementById('root') );

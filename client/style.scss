@@ -13,18 +13,6 @@ body, html {
         box-sizing: border-box;
 }
 
-.wrapper.minimal{
- background-color : #eee;
-}
-
-.wrapper.green{
- background-color : #4caf50;
-}
-
-.wrapper.paper{
-    background: url("https://www.toptal.com/designers/subtlepatterns/patterns/ep_naturalwhite.png");
-}
-
 input, textarea{
     font-family: 'Inconsolata', monospace;
 }
@@ -171,3 +159,17 @@ input, textarea{
     opacity : 1;
 }
 
+
+// Styles
+
+.wrapper.minimal{
+ background-color : #eee;
+}
+
+.wrapper.green{
+ background-color : #4caf50;
+}
+
+.wrapper.paper{
+    background: url("https://www.toptal.com/designers/subtlepatterns/patterns/ep_naturalwhite.png");
+}

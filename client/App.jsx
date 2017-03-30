@@ -72,7 +72,8 @@ ${text}`
 
     render(){
         var wordCount = countWords(this.state.text)
-        return <div className={"wrapper "+this.state.options.style.toLowerCase()}>
+        var style = this.state.options.style || "Green"
+        return <div className={"wrapper "+ style.toLowerCase()}>
                     <StickyContainer>
                         <Sticky>
                             <LoadBar words={wordCount}/>
@@ -209,7 +210,7 @@ class Options extends Component {
                     <div className={!this.state.nedit ? "options-item on" : "options-item"} onClick={()=>this.setState({nedit : !this.state.nedit})}>Edit</div>
                     <div className={this.state.scroll ? "options-item on" : "options-item"} onClick={()=>this.setState({scroll : !this.state.scroll})}>Scroll</div>
                     <div className={this.state.spellCheck ? "options-item on" : "options-item"} onClick={()=>this.setState({spellCheck : !this.state.spellCheck})}>Spellcheck</div>
-                    <Select className={"select-title"} title={"Theme"} choices={["Minimal","Green","Paper"]} onSelect={ (style) => this.setState({style}) } selected = {this.state.style} />
+                    <Select className={"select-title"} title={"Theme"} choices={["Minimal","Green","Paper"]} onSelect={ (style) => this.setState({style}) } selected = {this.state.style || "Green"} />
                 </div>
             </div>
     }
