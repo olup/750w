@@ -1,7 +1,8 @@
-body, html {
+body {
     margin : 0;
     padding : 0;
     font-family: 'Inconsolata', monospace;
+    overflow-y : scroll;
 }
 
 .wrapper{       
@@ -135,10 +136,25 @@ input, textarea{
     background-color : #589a6f;
 }
 
-.options-container {
-    text-align : right;
+.options-block{
+    display : flex;
+    flex-direction: row;
+    justify-content: flex-end;
+}
+
+.options-block>div{
+    background-color: white; 
+    padding : 10px;
+}
+
+.options-container {   
     margin-top : 10px;
-    
+}
+
+.options-container .container{
+        display:flex;
+        flex-direction: column;
+        align-content: flex-end;
 }
 
 .options-item, .select-title, .option-link{
@@ -150,15 +166,8 @@ input, textarea{
     color : black;
 }
 
-.select-item {
-    opacity : .5;
-    cursor : pointer;
-    margin-left : 20px;
-    display : block;
-    white-space: nowrap;
-}
-.select-item:before {
-    content : " "
+.options-item.nomargin{
+    margin : 0;
 }
 
 .options-item.on, .option-link:hover, .select-item.selected, .select-item:hover, .select-title , .select-title:hover{
@@ -198,7 +207,7 @@ input, textarea{
 
 .wrapper.picnick{
     background: url("/assets/img/picnick.jpg");
-    background-size: 50%;
+    background-size: 30%;
     .load-bar {
         background-color: #7b592a;
     }

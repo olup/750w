@@ -17,9 +17,10 @@ export default class App extends Component {
             modal : false,
             options : {
                 spellCheck : false,
-                color : true,
                 scroll : true,
-                nedit : false
+                nedit : false,
+                options : false,
+                style : "minimal"
             }
         }
     }
@@ -43,11 +44,10 @@ export default class App extends Component {
 
     Save(){
         var {text, title, tags} = this.state
-        var date = moment().format("DD_MM_YYYY")
-        var filename = `750w-${date}-${title}.txt`
+        var filename = `750W-${moment().format("DDMMYYYY")}-${title}.txt`
         var fileContent = `---
 title : ${title}
-date : ${date}
+date : ${moment().format("DD/MM/YYYY")}
 time :
 tags : ${tags}
 ---
@@ -72,10 +72,10 @@ ${text}`
 
     render(){
         var wordCount = countWords(this.state.text)
-        var style = this.state.options.style || "Green"
+        var options = this.state.options
         return <div> 
             {this.state.modal && <Modal  offDisplay={()=>this.setState({modal : false})}  onSave={this.Save.bind(this)} onChange={(title="",tags="")=>this.setState({title,tags})}/>}
-            <div className={this.state.modal ? "wrapper blurry "+ style.toLowerCase() : "wrapper "+ style.toLowerCase()}>
+            <div className={this.state.modal ? "wrapper blurry "+ options.style.toLowerCase() : "wrapper "+ options.style.toLowerCase()}>
                     <StickyContainer>
                         <Sticky>
                             <LoadBar words={wordCount}/>
@@ -193,7 +193,8 @@ class Options extends Component {
             color: true,
             scroll : true,
             nedit : false,
-            style : ""
+            style : "",
+            themes : false
         }
     }
     componentDidMount(){
@@ -208,16 +209,26 @@ class Options extends Component {
     }
     render(){
         return <div className="options-container">
-                <div className="container">
-                    <div className={this.state.options ? "options-item on" : "options-item"} onClick={()=>this.setState({options : !this.state.options})}>Options</div>
-                    { this.state.options && <span>
-                       <div className={!this.state.nedit ? "options-item on" : "options-item"} onClick={()=>this.setState({nedit : !this.state.nedit})}>Edit</div>
-                        <div className={this.state.scroll ? "options-item on" : "options-item"} onClick={()=>this.setState({scroll : !this.state.scroll})}>Scroll</div>
-                        <div className={this.state.spellCheck ? "options-item on" : "options-item"} onClick={()=>this.setState({spellCheck : !this.state.spellCheck})}>Spellcheck</div>
-                        <Select className={"select-title"} title={"Theme"} choices={["Minimal","Paper","Flowers","Picnick"]} onSelect={ (style) => this.setState({style}) } selected = {this.state.style || "Green"} />
-                        <a className="option-link" href="https://github.com/olup/750w" target="blank">About</a> 
-                    </span>}
-                </div>
+                <ClickOutside className="container" onClickOutside={()=>this.setState({options : false, themes : false})}>
+                    <div className="options-block">
+                        <div>
+                            <div className={this.state.options ? "options-item nomargin on" : "options-item nomargin"} onClick={()=>this.setState({options : !this.state.options, themes : false})}>Options</div>
+                            { this.state.options && <span>
+                            <div className={!this.state.nedit ? "options-item on" : "options-item"} onClick={()=>this.setState({nedit : !this.state.nedit})}>Edit</div>
+                                <div className={this.state.scroll ? "options-item on" : "options-item"} onClick={()=>this.setState({scroll : !this.state.scroll})}>Scroll</div>
+                                <div className={this.state.spellCheck ? "options-item on" : "options-item"} onClick={()=>this.setState({spellCheck : !this.state.spellCheck})}>Spellcheck</div>
+                                <div className={this.state.themes ? "options-item on" : "options-item"} onClick={()=>this.setState({themes : !this.state.themes})}>Themes</div>
+                                {/*<Select className={"select-title"} title={"Theme"} choices={["Minimal","Paper","Flowers","Picnick"]} onSelect={ (style) => this.setState({style}) } selected = {this.state.style || "Green"} />*/}
+                                <a className="option-link" href="https://github.com/olup/750w" target="blank">About</a> 
+                            </span>}
+                        </div>
+                    </div>
+                    {this.state.options && this.state.themes && <div className="options-block">
+                        <div>
+                            { ["Minimal","Paper", "Flowers", "Picnick"].map(it => <div className={this.state.style == it ? "options-item on" : "options-item"} onClick={()=>this.setState({style : it})}>{it}</div>)}
+                        </div>
+                    </div>}
+                </ClickOutside>
             </div>
     }
 }
