@@ -66,8 +66,8 @@ input, textarea{
     padding: 10px 15px;
     position: fixed;
     background-color: white;
-    top: 30px;
-    left: 30px;
+    top: 15px;
+    left: 15px;
     font-size: 20px;
     font-family: monospace;
     color: #ccc;
@@ -220,6 +220,30 @@ input, textarea{
     background: url("/assets/img/picnick.jpg");
     background-size: 30%;
     .load-bar {
-        background-color: #7b592a;
+        background-color: #fd7d7d;
+    }
+}
+
+.wrapper.ocean{
+    background: #76a5eb;
+    background-size: 30%;
+    .load-bar {
+        background-color: #2968a0;
+    }
+}
+
+.wrapper.forest{
+    background: #2ECC40;
+    background-size: 30%;
+    .load-bar {
+        background-color:#3D9970
+    }
+}
+
+.wrapper.banana{
+    background: #d7ba35;
+    background-size: 30%;
+    .load-bar {
+        background-color: #FF851B;
     }
 }

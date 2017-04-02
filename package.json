@@ -9,7 +9,7 @@
     "prod": "cross-env NODE_ENV=production webpack-dev-server --env.prod=true",
     "build": "cross-env NODE_ENV=production webpack --env.prod=true",
     "lint": "eslint ./client ./webpack.config.js -f table || true",
-    "deploy": "npm run build && surge -p static -d 750w.surge.sh"
+    "deploy": "npm run build && surge -p static -d https://750w.surge.sh"
   },
   "author": "olup otilapan",
   "license": "ISC",

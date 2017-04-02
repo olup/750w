@@ -3,9 +3,11 @@ import Textarea from 'react-textarea-autosize';
 import moment from 'moment'
 import { StickyContainer, Sticky } from 'react-sticky';
 import ClickOutside from "react-click-outside"
-var Dropbox = require('dropbox')
 
-var getCaretCoordinates = require('caretPos');
+import SaveToDropbox from './helpers/dropbox'
+import SaveToFile from './helpers/local'
+
+var getCaretCoordinates = require('./helpers/caretPos');
 
 export default class App extends Component {
     constructor(props){
@@ -16,6 +18,7 @@ export default class App extends Component {
             tags : "",
             words : 0,
             modal : false,
+            toast : {text : "", type:""},
             options : {
                 spellCheck : false,
                 scroll : true,
@@ -58,43 +61,8 @@ ${text}`
 
         fileContent = fileContent.replace(/\n/g,"\r\n")
         var url = 'data:text/plain;charset=utf-8,' + encodeURIComponent(fileContent)
-
-        if(type == "local") {        
-            var element = document.createElement('a');
-            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(fileContent));
-            element.setAttribute('download', filename);
-
-            element.style.display = 'none';
-            document.body.appendChild(element);
-
-            element.click();
-
-            document.body.removeChild(element);
-
-            this.setState({modal : false})
-        }
-        if(type=="dropbox"){
-            var dbx = new Dropbox({ clientId: "p470qv1bf5gpuot" });
-            var authUrl = dbx.getAuthenticationUrl('http://localhost:3000');
-            var _this = this
-            if(this.state.options.dbAccessToken){
-                var dbxx = new Dropbox({ accessToken : this.state.options.dbAccessToken });
-                dbxx.filesUpload({contents : fileContent, mute : false, autorename : true, mode : {'.tag':'overwrite'}, path:"/"+filename}).then(()=>console.log("ok !")).catch((err)=>console.log(err))
-                this.setState({modal : false})
-            } else {
-                oauthpopup({
-                    path: authUrl,
-                    callback: function(accessToken){   
-                        _this.state.options.dbAccessToken = accessToken
-                        localStorage.setItem("750options",JSON.stringify(_this.state.options))
-
-                        var dbxx = new Dropbox({ accessToken });
-                        dbxx.filesUpload({contents : fileContent, mute : false, autorename : true, mode : {'.tag':'overwrite'}, path:"/"+filename}).then(()=>console.log("ok !")).catch((err)=>console.log(err))
-                        _this.setState({modal : false})
-                    }
-                });
-            } 
-        }
+        if(type == "local") SaveToFile(filename, fileContent, () =>this.setState({modal : false}))
+        if(type == "dropbox") SaveToDropbox(filename, fileContent, () => this.setState({modal : false}))
     }
 
     render(){
@@ -210,7 +178,7 @@ class Modal extends Component {
 class SaveButton extends Component {
     render(){
         return <div className="save-container">
-                <div className="save-button" onClick={this.props.onClick.bind(this)}>💾</div>
+                <div className="save-button" onClick={this.props.onClick.bind(this)}>save</div>
             </div>
     }
 }
@@ -223,7 +191,7 @@ class Options extends Component {
             color: true,
             scroll : true,
             nedit : false,
-            style : "",
+            style : "minimal",
             themes : false
         }
     }
@@ -243,7 +211,7 @@ class Options extends Component {
                     <ClickOutside className="options-block" onClickOutside={()=>this.setState({options : false, themes : false})}>
                         <div>
                             <div className="options-line">
-                                <div className={this.state.options ? "options-item nomargin on" : "options-item nomargin"} onClick={()=>this.setState({options : !this.state.options, themes : false})}>Options</div>
+                                { !this.state.options && <div className={ "options-item nomargin"} onClick={()=>this.setState({options : !this.state.options, themes : false})}>Options</div>}
                                 { this.state.options && <span>
                                 <div className={!this.state.nedit ? "options-item on" : "options-item"} onClick={()=>this.setState({nedit : !this.state.nedit})}>Edit</div>
                                     <div className={this.state.scroll ? "options-item on" : "options-item"} onClick={()=>this.setState({scroll : !this.state.scroll})}>Scroll</div>
@@ -255,7 +223,7 @@ class Options extends Component {
                         </div>
                     {this.state.options && this.state.themes && <div>
                         <div className="options-line">
-                            { ["Minimal","Paper", "Flowers", "Picnick"].map(it => <div className={this.state.style == it ? "options-item on" : "options-item"} onClick={()=>this.setState({style : it})}>{it}</div>)}
+                            { ["Minimal","Forest","Ocean","Banana","Paper", "Flowers", "Picnick"].map(it => <div className={this.state.style == it ? "options-item on" : "options-item"} onClick={()=>this.setState({style : it})}>{it}</div>)}
                         </div>
                     </div>}
                     </ClickOutside>
@@ -274,39 +242,3 @@ function countWords(s){
     return s.split(' ').length; 
 }
 
-// opening a oauth popup and setting up a window function to callback
-
-function oauthpopup(options)
-{
-    options.windowName = options.windowName ||  'ConnectWithOAuth'; // should not include space for IE
-    options.windowOptions = options.windowOptions || 'location=0,status=0,width=800,height=400';
-    options.callback = options.callback || function(){ window.location.reload(); };
-    var that = {};
-    console.log(options.path);
-    that._oauthWindow = window.open(options.path, options.windowName, options.windowOptions);
-    window.onAuth = function(args){
-        options.callback(args.access_token)
-    }
-};
-
-// Function to triger on loading if the page is a popup of another one for oauth flow
-
-if(window.opener) {
-    window.opener.onAuth(getUrlVars())
-    window.close();
-}
-
-// parsing url vars sent by Dropbox
-
-function getUrlVars()
-{
-    var vars = [], hash;
-    var hashes = window.location.href.slice(window.location.href.indexOf('#') + 1).split('&');
-    for(var i = 0; i < hashes.length; i++)
-    {
-        hash = hashes[i].split('=');
-        vars.push(hash[0]);
-        vars[hash[0]] = hash[1];
-    }
-    return vars;
-}
