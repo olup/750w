@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "babel-runtime": "6.23.0",
+    "dropbox": "^2.5.2",
     "moment": "^2.18.1",
     "react": "15.4.2",
     "react-dom": "15.4.2",

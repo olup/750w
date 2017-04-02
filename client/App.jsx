@@ -3,6 +3,7 @@ import Textarea from 'react-textarea-autosize';
 import moment from 'moment'
 import { StickyContainer, Sticky } from 'react-sticky';
 import ClickOutside from "react-click-outside"
+var Dropbox = require('dropbox')
 
 var getCaretCoordinates = require('caretPos');
 
@@ -20,7 +21,8 @@ export default class App extends Component {
                 scroll : true,
                 nedit : false,
                 options : false,
-                style : "minimal"
+                style : "minimal",
+                dbAccessToken : null
             }
         }
     }
@@ -42,7 +44,7 @@ export default class App extends Component {
         })
     }
 
-    Save(){
+    Save(type){
         var {text, title, tags} = this.state
         var filename = `750W-${moment().format("DDMMYYYY")}-${title}.txt`
         var fileContent = `---
@@ -55,26 +57,51 @@ tags : ${tags}
 ${text}`
 
         fileContent = fileContent.replace(/\n/g,"\r\n")
+        var url = 'data:text/plain;charset=utf-8,' + encodeURIComponent(fileContent)
 
-        var element = document.createElement('a');
-        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(fileContent));
-        element.setAttribute('download', filename);
+        if(type == "local") {        
+            var element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(fileContent));
+            element.setAttribute('download', filename);
 
-        element.style.display = 'none';
-        document.body.appendChild(element);
+            element.style.display = 'none';
+            document.body.appendChild(element);
 
-        element.click();
+            element.click();
 
-        document.body.removeChild(element);
+            document.body.removeChild(element);
 
-        this.setState({modal : false})
+            this.setState({modal : false})
+        }
+        if(type=="dropbox"){
+            var dbx = new Dropbox({ clientId: "p470qv1bf5gpuot" });
+            var authUrl = dbx.getAuthenticationUrl('http://localhost:3000');
+            var _this = this
+            if(this.state.options.dbAccessToken){
+                var dbxx = new Dropbox({ accessToken : this.state.options.dbAccessToken });
+                dbxx.filesUpload({contents : fileContent, mute : false, autorename : true, mode : {'.tag':'overwrite'}, path:"/"+filename}).then(()=>console.log("ok !")).catch((err)=>console.log(err))
+                this.setState({modal : false})
+            } else {
+                oauthpopup({
+                    path: authUrl,
+                    callback: function(accessToken){   
+                        _this.state.options.dbAccessToken = accessToken
+                        localStorage.setItem("750options",JSON.stringify(_this.state.options))
+
+                        var dbxx = new Dropbox({ accessToken });
+                        dbxx.filesUpload({contents : fileContent, mute : false, autorename : true, mode : {'.tag':'overwrite'}, path:"/"+filename}).then(()=>console.log("ok !")).catch((err)=>console.log(err))
+                        _this.setState({modal : false})
+                    }
+                });
+            } 
+        }
     }
 
     render(){
         var wordCount = countWords(this.state.text)
         var options = this.state.options
         return <div> 
-            {this.state.modal && <Modal  offDisplay={()=>this.setState({modal : false})}  onSave={this.Save.bind(this)} onChange={(title="",tags="")=>this.setState({title,tags})}/>}
+            {this.state.modal && <Modal  offDisplay={()=>this.setState({modal : false})}  onSave={this.Save.bind(this, "local")} onDbSave={this.Save.bind(this, "dropbox")} onChange={(title="",tags="")=>this.setState({title,tags})}/>}
             <div className={this.state.modal ? "wrapper blurry "+ options.style.toLowerCase() : "wrapper "+ options.style.toLowerCase()}>
                     <StickyContainer>
                         <Sticky>
@@ -171,7 +198,10 @@ class Modal extends Component {
                         <div>Add some tags (comma separated - optional)</div>
                         <input type="text" onChange={e=>this.setState({tags : e.target.value})}/>
                     </div>
-                    <div className="foot" onClick={this.props.onSave.bind(this)}>Save</div>
+                    <div className="foot">
+                         <div onClick={this.props.onSave.bind(this)}>Save</div>
+                         <div className="dropBox" onClick={this.props.onDbSave.bind(this)}>Save On Dropbox</div>
+                    </div>
                 </div>
             </div>
     }
@@ -209,57 +239,32 @@ class Options extends Component {
     }
     render(){
         return <div className="options-container">
-                <ClickOutside className="container" onClickOutside={()=>this.setState({options : false, themes : false})}>
-                    <div className="options-block">
+                <div className="container" >
+                    <ClickOutside className="options-block" onClickOutside={()=>this.setState({options : false, themes : false})}>
                         <div>
-                            <div className={this.state.options ? "options-item nomargin on" : "options-item nomargin"} onClick={()=>this.setState({options : !this.state.options, themes : false})}>Options</div>
-                            { this.state.options && <span>
-                            <div className={!this.state.nedit ? "options-item on" : "options-item"} onClick={()=>this.setState({nedit : !this.state.nedit})}>Edit</div>
-                                <div className={this.state.scroll ? "options-item on" : "options-item"} onClick={()=>this.setState({scroll : !this.state.scroll})}>Scroll</div>
-                                <div className={this.state.spellCheck ? "options-item on" : "options-item"} onClick={()=>this.setState({spellCheck : !this.state.spellCheck})}>Spellcheck</div>
-                                <div className={this.state.themes ? "options-item on" : "options-item"} onClick={()=>this.setState({themes : !this.state.themes})}>Themes</div>
-                                {/*<Select className={"select-title"} title={"Theme"} choices={["Minimal","Paper","Flowers","Picnick"]} onSelect={ (style) => this.setState({style}) } selected = {this.state.style || "Green"} />*/}
-                                <a className="option-link" href="https://github.com/olup/750w" target="blank">About</a> 
-                            </span>}
+                            <div className="options-line">
+                                <div className={this.state.options ? "options-item nomargin on" : "options-item nomargin"} onClick={()=>this.setState({options : !this.state.options, themes : false})}>Options</div>
+                                { this.state.options && <span>
+                                <div className={!this.state.nedit ? "options-item on" : "options-item"} onClick={()=>this.setState({nedit : !this.state.nedit})}>Edit</div>
+                                    <div className={this.state.scroll ? "options-item on" : "options-item"} onClick={()=>this.setState({scroll : !this.state.scroll})}>Scroll</div>
+                                    <div className={this.state.spellCheck ? "options-item on" : "options-item"} onClick={()=>this.setState({spellCheck : !this.state.spellCheck})}>Spellcheck</div>
+                                    <div className={this.state.themes ? "options-item on" : "options-item"} onClick={()=>this.setState({themes : !this.state.themes})}>Themes</div>
+                                    <a className="option-link" href="https://github.com/olup/750w" target="blank">About</a> 
+                                </span>}
+                            </div>
                         </div>
-                    </div>
-                    {this.state.options && this.state.themes && <div className="options-block">
-                        <div>
+                    {this.state.options && this.state.themes && <div>
+                        <div className="options-line">
                             { ["Minimal","Paper", "Flowers", "Picnick"].map(it => <div className={this.state.style == it ? "options-item on" : "options-item"} onClick={()=>this.setState({style : it})}>{it}</div>)}
                         </div>
                     </div>}
-                </ClickOutside>
+                    </ClickOutside>
+                </div>
             </div>
     }
 }
 
-class Select extends Component {
-    constructor(props){
-        super(props)
-        this.state = {
-            open : false
-        }
-    }
-    toogleSelect(){
-        this.setState({open : !this.state.open})
-    }
-    select(select){
-        this.props.onSelect(select)
-        this.setState({ open : false})
-    }
-    render(){
-        return <span style={{position:"relative", textAlign : "left"}}>
-            <span onClick={this.toogleSelect.bind(this)} className={this.state.open ? this.props.className+" open" : this.props.className}>{this.props.title}</span>
-            { this.state.open && <ClickOutside onClickOutside={this.toogleSelect.bind(this)} style={{position : "absolute", top : "100%", left : 0, display : "inline-block" }}>
-                { this.props.choices.map( it => {
-                    var classn = "select-item"
-                    if( this.props.selected == it ) classn = "select-item selected"
-                    return <div key={it} onClick={this.select.bind(this, it)} className={classn}>{it}</div>
-                }) }
-            </ClickOutside> }
-        </span>
-    }
-}
+// counting words from a string
 
 function countWords(s){
     s = s.replace(/(^\s*)|(\s*$)/gi,"");//exclude  start and end white-space
@@ -267,4 +272,41 @@ function countWords(s){
     s = s.replace(/[ ]{2,}/gi," ");//2 or more space to 1
     if( s=="" || s == " ") return 0
     return s.split(' ').length; 
+}
+
+// opening a oauth popup and setting up a window function to callback
+
+function oauthpopup(options)
+{
+    options.windowName = options.windowName ||  'ConnectWithOAuth'; // should not include space for IE
+    options.windowOptions = options.windowOptions || 'location=0,status=0,width=800,height=400';
+    options.callback = options.callback || function(){ window.location.reload(); };
+    var that = {};
+    console.log(options.path);
+    that._oauthWindow = window.open(options.path, options.windowName, options.windowOptions);
+    window.onAuth = function(args){
+        options.callback(args.access_token)
+    }
+};
+
+// Function to triger on loading if the page is a popup of another one for oauth flow
+
+if(window.opener) {
+    window.opener.onAuth(getUrlVars())
+    window.close();
+}
+
+// parsing url vars sent by Dropbox
+
+function getUrlVars()
+{
+    var vars = [], hash;
+    var hashes = window.location.href.slice(window.location.href.indexOf('#') + 1).split('&');
+    for(var i = 0; i < hashes.length; i++)
+    {
+        hash = hashes[i].split('=');
+        vars.push(hash[0]);
+        vars[hash[0]] = hash[1];
+    }
+    return vars;
 }

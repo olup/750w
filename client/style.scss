@@ -43,7 +43,7 @@ input, textarea{
     /* margin: 100px; */
     min-height : 300px;
     margin: 0px auto;
-   
+    cursor : text;
 }
 
 .wrapper.blurry {
@@ -95,7 +95,7 @@ input, textarea{
     text-align : center;
 }
 
-.modal>div{
+.modal .title, .modal .body{
     padding : 20px;
 }
 
@@ -103,6 +103,10 @@ input, textarea{
     font-size : 20px;
     color : white;
     background-color: #a0a0a0;
+}
+
+.modal .foot{
+    display : flex;
 }
 
 .modal .body{
@@ -127,24 +131,33 @@ input, textarea{
     width : 300px;
 }
 
-.modal .foot {
+.modal .foot>div {
     background-color : #69b784;
     cursor : pointer;
+    padding : 20px;
+    flex:1;
 }
 
-.modal .foot:hover{
+.modal .foot>div:hover{
     background-color : #589a6f;
 }
 
-.options-block{
-    display : flex;
-    flex-direction: row;
-    justify-content: flex-end;
+.modal .foot>div.dropBox {
+    background-color : #75bdef;
 }
 
-.options-block>div{
+.modal .foot>div.dropBox:hover{
+    background-color : #649ec5;
+}
+
+.options-block{
+    display : inline-block
+}
+
+.options-line{
     background-color: white; 
     padding : 10px;
+    display:inline-block;
 }
 
 .options-container {   
@@ -152,9 +165,7 @@ input, textarea{
 }
 
 .options-container .container{
-        display:flex;
-        flex-direction: column;
-        align-content: flex-end;
+        text-align : right;
 }
 
 .options-item, .select-title, .option-link{
