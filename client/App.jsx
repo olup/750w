@@ -17,6 +17,7 @@ export default class App extends Component {
             title : "",
             tags : "",
             words : 0,
+            elapsedTime : 0,
             modal : false,
             toast : {text : "", type:""},
             options : {
@@ -25,13 +26,18 @@ export default class App extends Component {
                 nedit : false,
                 options : false,
                 style : "minimal",
-                dbAccessToken : null
+                dbAccessToken : null,
+                challenge : {
+                    type : "words",
+                    goal : 750
+                }
             }
         }
     }
 
     componentDidMount(){
         var _this = this
+        //this.startTimer()
         document.querySelector('textarea').addEventListener('keyup', function () {
             var coordinates = getCaretCoordinates(this, this.selectionEnd);
             var bodyRect = document.body.getBoundingClientRect()
@@ -45,6 +51,16 @@ export default class App extends Component {
             if (scroll && pos<minHeight) window.scroll(0, offset + coordinates.top - minHeight )
             
         })
+    }
+
+    startTimer(){
+        if(this.state.elapsedTime == 0) {
+            setInterval( () => {
+                this.setState({elapsedTime : this.state.elapsedTime + 1})
+            } , 1000 )
+            this.setState({elapsedTime : 1})
+        }
+        
     }
 
     Save(type){
@@ -61,21 +77,33 @@ ${text}`
 
         fileContent = fileContent.replace(/\n/g,"\r\n")
         var url = 'data:text/plain;charset=utf-8,' + encodeURIComponent(fileContent)
-        if(type == "local") SaveToFile(filename, fileContent, () =>this.setState({modal : false}))
-        if(type == "dropbox") SaveToDropbox(filename, fileContent, () => this.setState({modal : false}))
+        if(type == "local") SaveToFile(filename, fileContent, () => this.setState({modal : false, toast:{text:"File saved to disk",type:"success"}}) )
+        if(type == "dropbox") SaveToDropbox(filename, fileContent, () =>  this.setState({modal : false, toast:{text:"File saved to Dropbox",type:"success"}}) )
     }
 
     render(){
         var wordCount = countWords(this.state.text)
         var options = this.state.options
+        
+        var completion
+        if(options.challenge.type == "words") completion = ( 100/options.challenge.goal ) * wordCount
+        if(options.challenge.type == "time") completion = ( 100/options.challenge.goal ) * this.state.elapsedTime
+
         return <div> 
-            {this.state.modal && <Modal  offDisplay={()=>this.setState({modal : false})}  onSave={this.Save.bind(this, "local")} onDbSave={this.Save.bind(this, "dropbox")} onChange={(title="",tags="")=>this.setState({title,tags})}/>}
+            {this.state.modal && <Modal  
+                vals={{title : this.state.title, tags : this.state.tags}}
+                offDisplay={()=>this.setState({modal : false})}  
+                onSave={this.Save.bind(this, "local")} 
+                onDbSave={this.Save.bind(this, "dropbox")} 
+                onChange={(title="",tags="")=>this.setState({title,tags})}
+            />}
             <div className={this.state.modal ? "wrapper blurry "+ options.style.toLowerCase() : "wrapper "+ options.style.toLowerCase()}>
+                    <Toaster message={this.state.toast.text} type={this.state.toast.type} onClose={()=>this.setState({toast:{text:"",type:""}})} />
                     <StickyContainer>
                         <Sticky>
-                            <LoadBar words={wordCount}/>
+                            <LoadBar completion={completion}/>
                         </Sticky>
-                        {wordCount > 750 && <SaveButton text={this.state.text} onClick={()=>this.setState({modal : true})}/>}
+                        {completion >= 100 && <SaveButton text={this.state.text} onClick={()=>this.setState({modal : true})}/>}
                         <Editor onChange={text=> this.setState({text})} options={this.state.options}/>
                         <Options onChange={options=>this.setState({options})} />
                     </StickyContainer>
@@ -136,10 +164,9 @@ class Editor extends Component {
 
 class LoadBar extends Component {
     render(){
-        var width = (100/750) * this.props.words
         return <div className="load-bar-container">
                 <div className="container">
-                    <div className="load-bar" style={{width : width+"%"}}></div>
+                    <div className="load-bar" style={{width : this.props.completion+"%"}}></div>
                 </div>
             </div>
     }
@@ -149,26 +176,31 @@ class Modal extends Component {
     constructor(props){
         super(props)
         this.state = {
-            title : "",
-            text : ""
+            title : props.vals.title,
+            tags : props.vals.tags,
+            dboading : false
         }
     }
     componentDidUpdate(pp,ps){
         if(ps.title != this.state.title || ps.tags != this.state.tags) this.props.onChange(this.state.title, this.state.tags)
     }
     render(){
+        var vals = this.props.vals
         return <div className="modal-container" onClick={this.props.offDisplay.bind(this)}>
                 <div className="modal" onClick={e=>e.stopPropagation()}>
                     <div className="title">Save your words</div>
                     <div className="body">
                         <div>Choose a title (optional)</div>
-                        <input type="text" onChange={e=>this.setState({title : e.target.value})}/>
+                        <input type="text" value={this.state.title} onChange={e=>this.setState({title : e.target.value})}/>
                         <div>Add some tags (comma separated - optional)</div>
-                        <input type="text" onChange={e=>this.setState({tags : e.target.value})}/>
+                        <input type="text" value={this.state.tags} onChange={e=>this.setState({tags : e.target.value})}/>
                     </div>
                     <div className="foot">
                          <div onClick={this.props.onSave.bind(this)}>Save</div>
-                         <div className="dropBox" onClick={this.props.onDbSave.bind(this)}>Save On Dropbox</div>
+                         <div className="dropBox" onClick={() => {
+                                this.setState({dbLoading :true})
+                                this.props.onDbSave()
+                            }}>{!this.state.dbLoading ? "Save On Dropbox" : "Saving ..."}</div>
                     </div>
                 </div>
             </div>
@@ -183,6 +215,24 @@ class SaveButton extends Component {
     }
 }
 
+class Toaster extends Component {
+    componentDidUpdate(pp,ps){
+        if(pp.message != this.props.message && this.timer ) clearTimeout(this.timer)
+        if(this.props.message) this.timer = setTimeout( this.props.onClose.bind(this), 5000 )
+    }
+    render(){
+        if(!this.props.message) return null
+        return <div className="toaster-container">
+            <div className="r">
+                <div className={"toaster "+this.props.type}>
+                    <div className="message">{this.props.message}</div>
+                    <div className="close" onClick={this.props.onClose.bind(this)}>close</div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
 class Options extends Component {
     constructor(props){
         super(props)
@@ -192,7 +242,11 @@ class Options extends Component {
             scroll : true,
             nedit : false,
             style : "minimal",
-            themes : false
+            themes : false,
+            challenge : {
+                    type : "words",
+                    goal : 750
+                }
         }
     }
     componentDidMount(){

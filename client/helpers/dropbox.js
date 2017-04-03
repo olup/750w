@@ -19,8 +19,9 @@ export default function saveToDropbox(filename, content, cb){
 
 function upload(filename, content, accessToken, cb){
     var dbxx = new Dropbox({ accessToken });
-    dbxx.filesUpload({contents : content, mute : false, autorename : true, mode : {'.tag':'overwrite'}, path:"/"+filename}).then(()=>console.log("Saved to Dropbox")).catch((err)=>console.log(err))
-    if(cb) cb()
+    dbxx.filesUpload({contents : content, mute : false, autorename : true, mode : {'.tag':'overwrite'}, path:"/"+filename})
+        .then(()=> cb && cb() )
+        .catch((err)=>console.log(err))
 }
 
 // opening a oauth popup and setting up a window function to callback

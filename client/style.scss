@@ -29,6 +29,7 @@ input, textarea{
     height: 5px;
     /* opacity: .5; */
     max-width: 100%;
+    transition : .3s;
 }
 
 .container{
@@ -66,8 +67,8 @@ input, textarea{
     padding: 10px 15px;
     position: fixed;
     background-color: white;
-    top: 15px;
-    left: 15px;
+    top: 10px;
+    left: 10px;
     font-size: 20px;
     font-family: monospace;
     color: #ccc;
@@ -184,6 +185,46 @@ input, textarea{
 .options-item.on, .option-link:hover, .select-item.selected, .select-item:hover, .select-title , .select-title:hover{
     opacity : 1;
 }
+
+.toaster-container {
+    position:  fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    .r{
+        text-align : right;
+    }
+}
+
+.toaster {
+    background-color: #ccc;
+    padding: 15px;
+    margin: 10px 10px;
+    display: inline-flex;
+
+
+    .message {
+        flex: 1;
+        padding-right: 20px;
+    }
+
+    .close {
+        opacity: .5;
+        cursor:  pointer;
+    }
+
+    .close:hover {
+        opacity: .9;
+    }
+
+    &.success{
+        background-color : #59bd91;
+        color : white;
+    }
+}
+
+
 
 
 // Styles
