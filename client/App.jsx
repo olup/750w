@@ -84,7 +84,7 @@ ${text}`
     render(){
         var wordCount = countWords(this.state.text)
         var options = this.state.options
-        
+
         var completion
         if(options.challenge.type == "words") completion = ( 100/options.challenge.goal ) * wordCount
         if(options.challenge.type == "time") completion = ( 100/options.challenge.goal ) * this.state.elapsedTime
@@ -105,7 +105,7 @@ ${text}`
                         </Sticky>
                         {completion >= 100 && <SaveButton text={this.state.text} onClick={()=>this.setState({modal : true})}/>}
                         <Editor onChange={text=> this.setState({text})} options={this.state.options}/>
-                        <Options onChange={options=>this.setState({options})} />
+                        <Options options={options} onChange={options=>this.setState({options})} />
                     </StickyContainer>
             </div>
             </div>
@@ -236,18 +236,7 @@ class Toaster extends Component {
 class Options extends Component {
     constructor(props){
         super(props)
-        this.state = {
-            spellCheck: false,
-            color: true,
-            scroll : true,
-            nedit : false,
-            style : "minimal",
-            themes : false,
-            challenge : {
-                    type : "words",
-                    goal : 750
-                }
-        }
+        this.state = props.options
     }
     componentDidMount(){
         this.setState( JSON.parse(localStorage.getItem("750options")) )
