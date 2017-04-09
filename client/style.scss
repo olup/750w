@@ -176,6 +176,17 @@ input, textarea{
     margin-left : 10px;
     text-decoration : none;
     color : black;
+
+    input{
+        border : none;
+        padding : 0;
+        color : inherit;
+        font-family: inherit;
+        font-size: inherit;
+        width : auto;
+        display : inline-block;
+        outline : black;
+    }
 }
 
 .options-item.nomargin{

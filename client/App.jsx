@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Textarea from 'react-textarea-autosize';
+import AutosizeInput from 'react-input-autosize';
 import moment from 'moment'
 import { StickyContainer, Sticky } from 'react-sticky';
 import ClickOutside from "react-click-outside"
@@ -27,6 +28,7 @@ export default class App extends Component {
                 options : false,
                 style : "minimal",
                 dbAccessToken : null,
+                showChallenges : false,
                 challenge : {
                     type : "words",
                     goal : 750
@@ -51,13 +53,13 @@ export default class App extends Component {
             if (scroll && pos<minHeight) window.scroll(0, offset + coordinates.top - minHeight )
             
         })
+        setInterval( () => {
+                if(this.state.elapsedTime!=0) this.setState({elapsedTime : this.state.elapsedTime + 1})
+            } , 1000 )
     }
 
     startTimer(){
-        if(this.state.elapsedTime == 0) {
-            setInterval( () => {
-                this.setState({elapsedTime : this.state.elapsedTime + 1})
-            } , 1000 )
+        if(this.state.options.challenge.type == 'time' && this.state.elapsedTime == 0) {
             this.setState({elapsedTime : 1})
         }
         
@@ -87,7 +89,7 @@ ${text}`
 
         var completion
         if(options.challenge.type == "words") completion = ( 100/options.challenge.goal ) * wordCount
-        if(options.challenge.type == "time") completion = ( 100/options.challenge.goal ) * this.state.elapsedTime
+        if(options.challenge.type == "time") completion = ( 100/ (options.challenge.goal*60) ) * this.state.elapsedTime
 
         return <div> 
             {this.state.modal && <Modal  
@@ -104,8 +106,14 @@ ${text}`
                             <LoadBar completion={completion}/>
                         </Sticky>
                         {completion >= 100 && <SaveButton text={this.state.text} onClick={()=>this.setState({modal : true})}/>}
-                        <Editor onChange={text=> this.setState({text})} options={this.state.options}/>
-                        <Options options={options} onChange={options=>this.setState({options})} />
+                        <Editor onChange={text=> {
+                            this.startTimer()
+                            this.setState({text})
+                        }} options={this.state.options}/>
+                        <Options options={options} onChange={options=>{
+                            if(options.challenge != this.state.options.challenge) this.setState({elapsedTime : 0})
+                            this.setState({options})
+                        }} />
                     </StickyContainer>
             </div>
             </div>
@@ -239,7 +247,7 @@ class Options extends Component {
         this.state = props.options
     }
     componentDidMount(){
-        this.setState( JSON.parse(localStorage.getItem("750options")) )
+        this.setState( Object.assign({}, this.state, JSON.parse(localStorage.getItem("750options")) ))
     }
 
     componentDidUpdate(pp,ps){
@@ -251,7 +259,7 @@ class Options extends Component {
     render(){
         return <div className="options-container">
                 <div className="container" >
-                    <ClickOutside className="options-block" onClickOutside={()=>this.setState({options : false, themes : false})}>
+                    <ClickOutside className="options-block" onClickOutside={()=>this.setState({options : false, themes : false, showChallenges : false})}>
                         <div>
                             <div className="options-line">
                                 { !this.state.options && <div className={ "options-item nomargin"} onClick={()=>this.setState({options : !this.state.options, themes : false})}>Options</div>}
@@ -259,7 +267,8 @@ class Options extends Component {
                                 <div className={!this.state.nedit ? "options-item on" : "options-item"} onClick={()=>this.setState({nedit : !this.state.nedit})}>Edit</div>
                                     <div className={this.state.scroll ? "options-item on" : "options-item"} onClick={()=>this.setState({scroll : !this.state.scroll})}>Scroll</div>
                                     <div className={this.state.spellCheck ? "options-item on" : "options-item"} onClick={()=>this.setState({spellCheck : !this.state.spellCheck})}>Spellcheck</div>
-                                    <div className={this.state.themes ? "options-item on" : "options-item"} onClick={()=>this.setState({themes : !this.state.themes})}>Themes</div>
+                                    <div className={this.state.themes ? "options-item on" : "options-item"} onClick={()=>this.setState({showChallenges : false, themes : !this.state.themes})}>Theme</div>
+                                    <div className={this.state.showChallenges ? "options-item on" : "options-item"} onClick={()=>this.setState({themes : false, showChallenges : !this.state.showChallenges})}>Goal</div>
                                     <a className="option-link" href="https://github.com/olup/750w" target="blank">About</a> 
                                 </span>}
                             </div>
@@ -267,6 +276,13 @@ class Options extends Component {
                     {this.state.options && this.state.themes && <div>
                         <div className="options-line">
                             { ["Minimal","Forest","Ocean","Banana","Paper", "Flowers", "Picnick"].map(it => <div className={this.state.style == it ? "options-item on" : "options-item"} onClick={()=>this.setState({style : it})}>{it}</div>)}
+                        </div>
+                    </div>}
+                    {this.state.options && this.state.showChallenges && <div>
+                        <div className="options-line">
+                           <div className="options-item on"><AutosizeInput value={this.state.challenge.goal} onChange={(e)=>this.setState( { challenge : Object.assign( {}, this.state.challenge , {goal : e.target.value} )} )}/></div>
+                           <div className={this.state.challenge.type == "words" ? "options-item on":"options-item"} onClick={()=>this.setState({challenge: Object.assign({}, this.state.challenge, {type : "words"})})}>Words</div>
+                           <div className={this.state.challenge.type == "time" ? "options-item on":"options-item"} onClick={()=>this.setState({challenge: Object.assign({}, this.state.challenge, {type : "time"})})}>Minutes</div>
                         </div>
                     </div>}
                     </ClickOutside>
