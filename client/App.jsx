@@ -29,6 +29,7 @@ export default class App extends Component {
                 style : "minimal",
                 dbAccessToken : null,
                 showChallenges : false,
+                counter : false,
                 challenge : {
                     type : "words",
                     goal : 750
@@ -85,11 +86,13 @@ ${text}`
 
     render(){
         var wordCount = countWords(this.state.text)
+        var charCount = this.state.text.length
         var options = this.state.options
 
         var completion
         if(options.challenge.type == "words") completion = ( 100/options.challenge.goal ) * wordCount
         if(options.challenge.type == "time") completion = ( 100/ (options.challenge.goal*60) ) * this.state.elapsedTime
+        if(options.challenge.type == "free") completion = 100
 
         return <div> 
             {this.state.modal && <Modal  
@@ -102,17 +105,20 @@ ${text}`
             <div className={this.state.modal ? "wrapper blurry "+ options.style.toLowerCase() : "wrapper "+ options.style.toLowerCase()}>
                     <Toaster message={this.state.toast.text} type={this.state.toast.type} onClose={()=>this.setState({toast:{text:"",type:""}})} />
                     <StickyContainer>
-                        <Sticky>
+                        {options.challenge.type != "free" && <Sticky>
                             <LoadBar completion={completion}/>
-                        </Sticky>
-                        {completion >= 100 && <SaveButton text={this.state.text} onClick={()=>this.setState({modal : true})}/>}
+                        </Sticky>}
+                        {completion >= 100 && <SaveButton onClick={()=>this.setState({modal : true})}/>}
                         <Editor onChange={text=> {
                             this.startTimer()
                             this.setState({text})
                         }} options={this.state.options}/>
-                        <Options options={options} onChange={options=>{
-                            if(options.challenge != this.state.options.challenge) this.setState({elapsedTime : 0})
-                            this.setState({options})
+                        <Options 
+                            options={options} 
+                            count={{chars : charCount, words : wordCount}}
+                            onChange={options=>{
+                                if(options.challenge != this.state.options.challenge) this.setState({elapsedTime : 0})
+                                this.setState({options})
                         }} />
                     </StickyContainer>
             </div>
@@ -259,6 +265,7 @@ class Options extends Component {
     render(){
         return <div className="options-container">
                 <div className="container" >
+                    {this.state.counter && <div className="options-single-block">{this.props.count.words} w / {this.props.count.chars} c</div>}
                     <ClickOutside className="options-block" onClickOutside={()=>this.setState({options : false, themes : false, showChallenges : false})}>
                         <div>
                             <div className="options-line">
@@ -266,6 +273,7 @@ class Options extends Component {
                                 { this.state.options && <span>
                                 <div className={!this.state.nedit ? "options-item on" : "options-item"} onClick={()=>this.setState({nedit : !this.state.nedit})}>Edit</div>
                                     <div className={this.state.scroll ? "options-item on" : "options-item"} onClick={()=>this.setState({scroll : !this.state.scroll})}>Scroll</div>
+                                    <div className={this.state.counter ? "options-item on" : "options-item"} onClick={()=>this.setState({counter : !this.state.counter})}>Count</div>
                                     <div className={this.state.spellCheck ? "options-item on" : "options-item"} onClick={()=>this.setState({spellCheck : !this.state.spellCheck})}>Spellcheck</div>
                                     <div className={this.state.themes ? "options-item on" : "options-item"} onClick={()=>this.setState({showChallenges : false, themes : !this.state.themes})}>Theme</div>
                                     <div className={this.state.showChallenges ? "options-item on" : "options-item"} onClick={()=>this.setState({themes : false, showChallenges : !this.state.showChallenges})}>Goal</div>
@@ -280,9 +288,10 @@ class Options extends Component {
                     </div>}
                     {this.state.options && this.state.showChallenges && <div>
                         <div className="options-line">
-                           <div className="options-item on"><AutosizeInput value={this.state.challenge.goal} onChange={(e)=>this.setState( { challenge : Object.assign( {}, this.state.challenge , {goal : e.target.value} )} )}/></div>
+                           {this.state.challenge.type!="free" && <div className="options-item on"><AutosizeInput value={this.state.challenge.goal} onChange={(e)=>this.setState( { challenge : Object.assign( {}, this.state.challenge , {goal : e.target.value} )} )}/></div>}
                            <div className={this.state.challenge.type == "words" ? "options-item on":"options-item"} onClick={()=>this.setState({challenge: Object.assign({}, this.state.challenge, {type : "words"})})}>Words</div>
                            <div className={this.state.challenge.type == "time" ? "options-item on":"options-item"} onClick={()=>this.setState({challenge: Object.assign({}, this.state.challenge, {type : "time"})})}>Minutes</div>
+                           <div className={this.state.challenge.type == "free" ? "options-item on":"options-item"} onClick={()=>this.setState({challenge: Object.assign({}, this.state.challenge, {type : "free"})})}>Free</div>
                         </div>
                     </div>}
                     </ClickOutside>
